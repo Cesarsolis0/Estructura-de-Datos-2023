@@ -20,43 +20,46 @@
 # productos recibidos en la pila y la cantidad de productos para despachar en la cola.
 
 class Almacen:
+    
     def __init__(self):
         self.productos_recibidos = []
         self.productos_despacho = []
 
-    #agrega un producto a self.productos_recibidos
     def agregar_producto(self,producto):
+    #agrega un producto a self.productos_recibidos.
         self.productos_recibidos.append(producto)
 
-    #si self.productos_recibidos tiene algun producto elimina el ultimo producto agregado y lo asigna a la variable
-    #producto,luego esta se añade a self.productos_despacho y luegos se despacha(elimina de self.productos_despacho)
     def despachar_producto(self):
+    #si self.productos_recibidos tiene algun producto elimina el ultimo producto agregado y lo asigna a la variable
+    #producto,luego esta se añade a self.productos_despacho y luegos se despacha(elimina de self.productos_despacho),
+    # sino imprime un mensaje diciendo que no hay productos para despachar.
         if self.productos_recibidos:
             producto=self.productos_recibidos.pop()
             self.productos_despacho.append(producto)
             self.productos_despacho.pop(0)
         else:
-            raise ValueError ("No hay productos disponibles para despachar")
+            print("No hay productos disponibles para despachar")
 
-    #si productos_Recibidos no tiene elementos devuelve un mensaje confirmandolo
     def productos_recibidos_is_empty(self):
+    #si productos_Recibidos no tiene elementos devuelve un mensaje confirmandolo.
         if len(self.productos_recibidos)==0:
             print("La pila de productos recibidos está vacía")
-
-    #si productos_despacho no tiene elementos devuelve un mensaje confirmandolo  
+ 
     def productos_despacho_is_empty(self):
+    #si productos_despacho no tiene elementos devuelve un mensaje confirmandolo.
         if len(self.productos_despacho)==0:
             print("La cola de productos para despachar está vacía")
     
-    #imprime en un lista los elementos de productos_recibidos
     def imprimir_productos_recibidos(self):
+    #imprime en un lista los elementos de productos_recibidos.
         print(self.productos_recibidos)
 
-    #imprime en un lista los elementos de productos_despacho
     def imprimir_productos_despacho(self):
+    #imprime en un lista los elementos de productos_despacho.
         print(self.productos_despacho)
-    #suma la cantidad de productos que se encuentran en la pila y cola
+
     def total_productos(self):
+    #suma la cantidad de productos que se encuentran en la pila y cola,y devuelve el total de productos.
         recibidos=len(self.productos_recibidos)
         despacho=len(self.productos_despacho)
         total=recibidos+despacho
@@ -75,6 +78,9 @@ almacen.imprimir_productos_despacho()
 almacen.despachar_producto()
 almacen.despachar_producto()
 almacen.despachar_producto()
+almacen.despachar_producto()
+almacen.despachar_producto()
+# almacen.despachar_producto()
 almacen.imprimir_productos_recibidos()
 almacen.imprimir_productos_despacho()
 almacen.total_productos()
