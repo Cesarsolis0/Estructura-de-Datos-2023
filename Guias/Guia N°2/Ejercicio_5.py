@@ -15,67 +15,148 @@
 # E. Obtener jefe directo: Dado un empleado, muestra en pantalla el nombre y cargo de
 # su jefe directo.
 
-class Nodo:
-#se crea un nodo el cual representara a cada empleado
-    def __init__(self , id , cargo ):
-        self.id = id
+class Empleado:
+
+    def __init__(self, nombre, cargo):
+        self.nombre = nombre
         self.cargo = cargo
         self.subordinados = []
 
-class Arbol:
-#se crea la clase arbol la cual representara la jerarquia de empleados
-    def __init__ (self,id,cargo):
-    #se inicializa dando los parametros de la raiz(jefe)
-        self.raiz = Nodo(id, cargo)
+    #se agrega un subordinado a la lista subordinados
+    def agregar_subordinado(self, subordinado):
+        self.subordinados.append(subordinado)
 
-    def agregar_empleado(self,id,cargo,encargado):
-    #se crea un empleado que recibe un identificador y cargo
-        empleado= Nodo(id,cargo)
-        if encargado:
-        # si el encargado existe se agrega el empleado como su suvordinado
-           encargado.subordinados.append(empleado)
+    #se elimina un determinado subordinado de la lista de subordinados
+    def eliminar_subordinado(self, subordinado):
+        self.subordinados.remove(subordinado)
+
+    #se obtiene la lista subordinados
+    def obtener_subordinados(self):
+        return self.subordinados
+
+    #en caso de haverse agregado un jefe directo al momento de agregar el empleado
+    #se obtiene el jefe ditecto correspondiente
+    def obtener_jefe_directo(self):
+        return self.jefe_directo
+
+class Empresa:
+    def __init__(self):
+        self.raiz = None
+
+    #Se agrega un empleado con su respectivo nombre y cargo, en caso de no ser
+    #jefe directo, el valor predeterminado es None
+
+    def agregar_empleado(self, nombre, cargo, jefe_directo=None):
+        empleado = Empleado(nombre, cargo)
+        if jefe_directo:
+            jefe_directo.agregar_subordinado(empleado)
+            empleado.jefe_directo = jefe_directo
         else:
-        #si el encargado no existe el empleado se vuelve el encargado
             self.raiz = empleado
 
+    #se busca el empleado con el metodo buscar_empleado()
+    #y se elimina como subordinado de su respectivo jefe directo encontrado con
+    #el metodo obtener_jefe_directo()
+
+    def eliminar_empleado(self, nombre):
+        empleado = self.buscar_empleado(nombre)
+        if empleado:
+            jefe_directo = empleado.obtener_jefe_directo()
+            if jefe_directo:
+                jefe_directo.eliminar_subordinado(empleado)
+            else:
+                self.raiz = None
+            self.actualizar_jefe_directo(empleado, jefe_directo)
+        else:
+            print("No se encontró el empleado.")
+
+    def actualizar_jefe_directo(self, empleado, nuevo_jefe_directo):
+        subordinados = empleado.obtener_subordinados()
+        for subordinado in subordinados:
+            subordinado.jefe_directo = nuevo_jefe_directo
+            self.actualizar_jefe_directo(subordinado, nuevo_jefe_directo)
+
+    #busca el empleado y retorna el correspondiente objeto cuyo nombre coincida
+    #con el nombre pasado como parametro. Se usa recursion para recorrer el arbol
+    #partiendo desde la raiz.
+
+    def buscar_empleado(self, nombre, nodo=None):
+        if not nodo:
+            nodo = self.raiz
+
+        if nodo.nombre == nombre:
+            return nodo
+
+        for subordinado in nodo.obtener_subordinados():
+            resultado = self.buscar_empleado(nombre, subordinado)
+            if resultado:
+                return resultado
+
+        return None
+    
+    #si la raiz es distinta de None, se llama al metodo mostrar_arbol 
+    #que muestra todo el arbol construido
+
     def mostrar_jerarquia(self):
-    #este metodo es el que mostrara la jerarquia.establecemos desde donde se empezara a ver la jerarqia
-        self.mostrar_jerarquia_recursivamente(self.raiz, 0)
+        if self.raiz:
+            self.mostrar_arbol(self.raiz)
 
-    def mostrar_jerarquia_recursivamente(self, nodo, rama):
-    #esta funcion recorre un nodo e imprime su contenido,si el nodo tiene subordinados,recorre la lista e imprime 
-    # su contenido
-        print("   " * rama + f"|_ {nodo.id}: {nodo.cargo}")
-        for subordinado in nodo.subordinados:
-            self.mostrar_jerarquia_recursivamente(subordinado, rama + 1)
+    #muestra todo el arbol, con su respectiva identacion para decir que elemento
+    #es hijo de quien
+
+    def mostrar_arbol(self, empleado, nivel=0):
+        espacio = "  " * nivel
+        print(espacio + empleado.nombre + " - " + empleado.cargo)
+
+        subordinados = empleado.obtener_subordinados()
+        for subordinado in subordinados:
+            self.mostrar_arbol(subordinado, nivel + 1)
+
+    #obtiene el jefe directo de un determinado empleado, si efectivamente lo 
+    #tiene lo muestra, de lo contrario devuelve un mensaje que informa que el empleado
+    #no tiene jefe directo. De igual forma, se informa que el empleado no se encontro.
+
+    def obtener_jefe_directo(self, nombre):
+        empleado = self.buscar_empleado(nombre)
+        if empleado:
+            jefe_directo = empleado.obtener_jefe_directo()
+            if jefe_directo:
+                return jefe_directo.nombre + " - " + jefe_directo.cargo
+            else:
+                return "No tiene jefe directo."
+        else:
+            return "No se encontró el empleado."
 
 
-# Jerarquia empresa
-# CEO o director ejecutivo.
-# Presidente.
-# Vicepresidente.
-# Jefes de cada departamento.
-# Gerentes.
-# Supervisores.
-# Empleados.
 
+empresa = Empresa()
+empresa.agregar_empleado("Juan", "Gerente")
+empresa.agregar_empleado("María", "Supervisor", empresa.buscar_empleado("Juan"))
+empresa.agregar_empleado("Pedro", "Analista", empresa.buscar_empleado("María"))
+empresa.agregar_empleado("Pepe", "Analista", empresa.buscar_empleado("María"))
+empresa.agregar_empleado("Andrés", "sub-Analista", empresa.buscar_empleado("Pepe"))
 
-jerarquia = Arbol(1,"director ejecutivo")
+print("Jerarquía completa:")
+empresa.mostrar_jerarquia()
 
-jerarquia.agregar_empleado(2,"presidente",jerarquia.raiz)
-jerarquia.agregar_empleado(5,"jefe de departamento",jerarquia.raiz.subordinados[0])
-jerarquia.agregar_empleado(10,"empleado",jerarquia.raiz.subordinados[0].subordinados[0])
-jerarquia.agregar_empleado(11,"empleado",jerarquia.raiz.subordinados[0].subordinados[0])
-jerarquia.agregar_empleado(6,"jefe de departamanto",jerarquia.raiz.subordinados[0])
-jerarquia.agregar_empleado(10,"empleado",jerarquia.raiz.subordinados[0].subordinados[1])
-jerarquia.agregar_empleado(11,"empleado",jerarquia.raiz.subordinados[0].subordinados[1])
-jerarquia.agregar_empleado(4,"jefe de departamento",jerarquia.raiz.subordinados[0])
-jerarquia.agregar_empleado(10,"empleado",jerarquia.raiz.subordinados[0].subordinados[2])
-jerarquia.agregar_empleado(11,"empleado",jerarquia.raiz.subordinados[0].subordinados[2])
-jerarquia.agregar_empleado(3,"vicepresdente",jerarquia.raiz)
-jerarquia.agregar_empleado(7,"empleado",jerarquia.raiz.subordinados[1])
-jerarquia.agregar_empleado(8,"empleado",jerarquia.raiz.subordinados[1])
-jerarquia.agregar_empleado(9,"empleado",jerarquia.raiz.subordinados[1])
-print("Jerarquia de la empresa:")
+print("Buscar empleado:")
+
+empleado_buscado = "María"
+resultado_busqueda = empresa.buscar_empleado(empleado_buscado)
+if resultado_busqueda:
+    print("Nombre: " + resultado_busqueda.nombre)
+    print("Cargo: " + resultado_busqueda.cargo)
+    subordinados = resultado_busqueda.obtener_subordinados()
+    if subordinados:
+        print("Subordinados:")
+        for subordinado in subordinados:
+            print("- " + subordinado.nombre)
+else:
+    print(f'El empleado buscado no existe.')
+
 print()
-jerarquia.mostrar_jerarquia()
+
+print("Obtener jefe directo:")
+empleado_jefe = "Pedro"
+jefe_directo = empresa.obtener_jefe_directo(empleado_jefe)
+print(f'Jefe directo de  {empleado_jefe} : {jefe_directo}')
